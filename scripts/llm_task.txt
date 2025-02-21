@@ -1,0 +1,18 @@
+Task 1:
+List all news events
+This is for me to generate views on the markets
+
+Task 2:
+Act as a macro analyst, for each topic in the attached file, list the events and identify any main theme/s
+
+for each theme:
+what is/are the trigger event/s supporting the theme; provide in-dept details
+determine the cause and effect like how is it expected to impact markets
+How significant is this event in the broader market context
+How does this news fit into larger macroeconomic trends
+Are there implications for specific asset classes
+How does this affect key industries
+What unique perspective or contrarian view can be drawn from this news?
+How might markets underreact or overreact to this development?
+Are there potential second-order effects that are not immediately obvious?
+imply and suggest outlook on specific asset classes for what time horizon if any

@@ -44,8 +44,12 @@ def mine_news_output_dataframe(keyword, num_pages):
 
 def scrape_news(keywords):
 
+    # Remove all existing handlers
+    for handler in logging.root.handlers[:]:
+        logging.root.removeHandler(handler)
+
     logging.basicConfig(
-        filename="C:\\Users\\tee_m\\Desktop\\TIC3901 Indus Project\\scripts\\script.log",
+        filename="C:\\Users\\tee_m\\Desktop\\TIC3901 Indus Project\\scripts\\scrape_news.log",
         level=logging.DEBUG,
         format="%(asctime)s - %(levelname)s - %(message)s"
     )

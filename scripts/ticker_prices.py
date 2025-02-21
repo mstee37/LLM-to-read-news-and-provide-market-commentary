@@ -4,6 +4,59 @@ from datetime import datetime, timedelta
 from pandas.tseries.offsets import BusinessDay
 from send_email import send_email_v2
 from scrape_eco_calendar import scrape_and_process_calendar
+import plotly.graph_objects as go
+import plotly.io as pio
+
+def normalize(series):
+    return (series - series.min()) / (series.max() - series.min())
+
+def map_color(val):
+    return f'rgb({int((1 - val) * 255)}, {int(val * 255)}, 0)'
+
+def create_market_performance_table(df, output_file='C:\\Users\\tee_m\\Desktop\\TIC3901 Indus Project\\scripts\\market_performance_table.html'):
+    # Get colors for each column
+    dod_colors = [map_color(v) for v in normalize(df['DoD %'])]
+    wow_colors = [map_color(v) for v in normalize(df['WoW %'])]
+    mom_colors = [map_color(v) for v in normalize(df['MoM %'])]
+
+    # Plotly Table with cell background colors
+    fig = go.Figure(data=[go.Table(
+        header=dict(
+            values=list(df.columns),
+            fill_color='lightgrey',
+            align='left',
+            height=20  # Adjust header height
+        ),
+        cells=dict(
+            values=[df[col].round(5) for col in df.columns],
+            fill_color=[
+                ['white'] * len(df),  # Ticker
+                ['white'] * len(df),  # Last Close
+                dod_colors,
+                wow_colors,
+                mom_colors
+            ],
+            align='left',
+            height=20,  # Adjust cell height
+            line=dict(color='grey', width=0.5),  # Adjust line color and width
+            # padding=dict(t=10, b=10),  # Adjust padding (top and bottom)
+            # columnwidth=[80, 100, 80, 80, 80]  # Adjust column widths
+        )
+    )])
+
+    fig.update_layout(
+        title="Market Performance Table",
+        height=1000,
+        width=800
+    )
+
+    # Save the figure to an HTML file
+    pio.write_html(fig, file=output_file)
+
+    # Show the figure
+    # fig.show()
+    # return pd.read_html(output_file)
+    
 
 def calculate_changes(ticker, name, start_date, end_date):
     data = yf.download(ticker, start=start_date, end=end_date, auto_adjust=False)
@@ -67,10 +120,10 @@ def combine_html_tables(html_1, html_2):
 
 if __name__ == "__main__":
     # tickers = ["BTC-USD"]  # Add your list of tickers here
+    # names = ["BTC"]
+    
     tickers = pd.read_csv("C:\\Users\\tee_m\\Desktop\\TIC3901 Indus Project\\scripts\\input_ticker_prices.csv")["Ticker"].tolist()
-    # print(tickers.columns)
     names = pd.read_csv("C:\\Users\\tee_m\\Desktop\\TIC3901 Indus Project\\scripts\\input_ticker_prices.csv")["Name"].tolist()
-
     
     end_date = datetime.today().date()
     start_date = end_date - timedelta(29) - BusinessDay(1)  # Retrieve data for the past month
@@ -80,10 +133,13 @@ if __name__ == "__main__":
     
     # Display the results
     print(results_df.sort_values(by="DoD %").round(5).to_string())
-    
     html_df = combine_html_tables(results_df.sort_values(by="DoD %").round(5).to_html(index=False, justify="center", border=1), scrape_and_process_calendar())
     
-    send_email_v2(subject=f"{end_date} Daily Snapshot & ECO Calendar", query="No LLM used in this process", html_body=html_df)
+    # table with conditional formmating
+    create_market_performance_table(results_df[results_df.columns[:5]])
+    path = ['C:\\Users\\tee_m\\Desktop\\TIC3901 Indus Project\\scripts\\market_performance_table.html']
+    # print(table)
+    send_email_v2(subject=f"{end_date} Daily Snapshot & ECO Calendar", query="No LLM used in this process", html_body=html_df, attachments=path)
 
     # Save to a CSV file
     results_df.to_csv("C:\\Users\\tee_m\\Desktop\\TIC3901 Indus Project\\scripts\\output_ticker_prices.csv", index=False)
